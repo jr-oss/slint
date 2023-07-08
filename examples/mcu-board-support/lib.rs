@@ -19,6 +19,11 @@ mod stm32h735g;
 #[cfg(feature = "stm32h735g")]
 pub use stm32h735g::*;
 
+#[cfg(feature = "stm32h745disco")]
+mod stm32h745disco;
+#[cfg(feature = "stm32h745disco")]
+pub use stm32h745disco::*;
+
 #[cfg(feature = "esp32-s2-kaluga-1")]
 mod esp32_s2_kaluga_1;
 #[cfg(feature = "esp32-s2-kaluga-1")]
@@ -32,6 +37,7 @@ pub use esp32_s3_box::*;
 #[cfg(not(any(
     feature = "pico-st7789",
     feature = "stm32h735g",
+    feature = "stm32h745disco",
     feature = "esp32-s2-kaluga-1",
     feature = "esp32-s3-box"
 )))]
@@ -40,6 +46,7 @@ pub use i_slint_core_macros::identity as entry;
 #[cfg(not(any(
     feature = "pico-st7789",
     feature = "stm32h735g",
+    feature = "stm32h745disco",
     feature = "esp32-s2-kaluga-1",
     feature = "esp32-s3-box"
 )))]

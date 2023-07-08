@@ -154,6 +154,7 @@ raw-window-handle-06 = { package = "raw-window-handle", version = "0.6", feature
 [profile.release]
 lto = true
 panic = "abort"
+debug = 2
 
 [profile.dev]
 panic = "abort"

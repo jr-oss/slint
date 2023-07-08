@@ -164,6 +164,14 @@ Using [probe-run](https://github.com/knurling-rs/probe-run) (`cargo install prob
 CARGO_PROFILE_RELEASE_OPT_LEVEL=s CARGO_TARGET_THUMBV7EM_NONE_EABIHF_RUNNER="probe-run --chip STM32H735IGKx" cargo run -p printerdemo_mcu --no-default-features  --features=mcu-board-support/stm32h735g --target=thumbv7em-none-eabihf --release
 ```
 
+### STM32H745-DISCOVERY KIT
+
+Using [probe-run](https://github.com/knurling-rs/probe-run) (`cargo install probe-run`)
+
+```sh
+CARGO_TARGET_THUMBV7EM_NONE_EABIHF_RUNNER="probe-run --chip STM32H745XIHx" cargo +nightly run -p printerdemo_mcu --no-default-features  --features=mcu-board-support/stm32h745disco --target=thumbv7em-none-eabihf --release
+```
+
 ### ESP32
 
 #### Prerequisites
