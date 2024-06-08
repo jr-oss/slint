@@ -6,6 +6,7 @@ extern crate alloc;
 use alloc::boxed::Box;
 use alloc::rc::Rc;
 use core::cell::RefCell;
+use core::ptr;
 pub use cortex_m_rt::entry;
 use defmt_rtt as _;
 use embedded_display_controller::{DisplayController, DisplayControllerLayer};
@@ -52,7 +53,7 @@ static RNG: cortex_m::interrupt::Mutex<core::cell::RefCell<Option<hal::rng::Rng>
     cortex_m::interrupt::Mutex::new(core::cell::RefCell::new(None));
 
 pub fn init() {
-    unsafe { ALLOCATOR.init(&mut HEAP as *const u8 as usize, core::mem::size_of_val(&HEAP)) }
+    unsafe { ALLOCATOR.init(ptr::addr_of_mut!(HEAP) as usize, HEAP_SIZE) }
     slint::platform::set_platform(Box::new(StmBackend::default()))
         .expect("backend already initialized");
 }
@@ -171,9 +172,13 @@ impl Default for StmBackend {
         // SAFETY the init function is only called once (as enforced by Peripherals::take)
         let (fb1, fb2) = { (ptr::addr_of_mut!(FB1), ptr::addr_of_mut!(FB2)) };
         // Make sure, that init returns same memory address as defined in memory.x
-        assert_eq!(sdram_base as usize, fb1.as_ptr() as *const TargetPixel as usize);
-        fb1.fill(slint::platform::software_renderer::Rgb565Pixel(0));
-        fb2.fill(slint::platform::software_renderer::Rgb565Pixel(0));
+        assert_eq!(sdram_base as usize, fb1 as usize);
+        unsafe {
+            (*fb1).fill(slint::platform::software_renderer::Rgb565Pixel(0));
+        }
+        unsafe {
+            (*fb2).fill(slint::platform::software_renderer::Rgb565Pixel(0));
+        }
 
         // setup LTDC  (LTDC_MspInit)
         let _p = gpioh.ph9.into_alternate::<14>().speed(Speed::High).internal_pull_up(true);
@@ -239,10 +244,7 @@ impl Default for StmBackend {
 
         // Safety: the frame buffer has the right size
         unsafe {
-            layer.enable(
-                fb1.as_ptr() as *const u8,
-                embedded_display_controller::PixelFormat::RGB565,
-            );
+            layer.enable(fb1 as *const u8, embedded_display_controller::PixelFormat::RGB565);
         }
 
         //lcd_disp_en.set_low();
@@ -293,8 +295,8 @@ impl slint::platform::Platform for StmBackend {
         // Safety: The Refcell at the beginning of `run_event_loop` prevents re-entrancy and thus multiple mutable references to FB1/FB2.
         let (fb1, fb2) = { (ptr::addr_of_mut!(FB1), ptr::addr_of_mut!(FB2)) };
 
-        let mut displayed_fb: &mut [TargetPixel] = fb1;
-        let mut work_fb: &mut [TargetPixel] = fb2;
+        let mut displayed_fb: &mut [TargetPixel] = unsafe { &mut *fb1 };
+        let mut work_fb: &mut [TargetPixel] = unsafe { &mut *fb2 };
 
         let mut last_touch = None;
         self.window
